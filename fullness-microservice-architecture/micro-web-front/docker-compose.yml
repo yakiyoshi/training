@@ -1,0 +1,9 @@
+version: '2'
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - .:/usr/share/nginx/html
+      #- ./nginx/server.conf:/etc/nginx/nginx.conf

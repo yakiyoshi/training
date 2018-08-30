@@ -12,6 +12,7 @@ import (
     "strconv"
 	_ "github.com/qor/qor"
     "github.com/qor/admin"
+    "github.com/streadway/amqp"
 )
 
 //------------------------------
@@ -19,7 +20,9 @@ import (
 //------------------------------
 func main() {
 	// DB接続
-	db = gormConnect()
+    db = gormConnect()
+    // メッセージ受信
+    go receiveMessage()
 	// Admin画面
     launchAdmin()
 	// RestAPI設定
@@ -209,3 +212,62 @@ func validateJwtToken(req *http.Request) (*User,error){
     return user,nil
 }
 
+//------------------------------
+// RabbitMQ Receive Setting
+//------------------------------
+var amqpURI string = "amqp://user:bitnami@rabbitmq:5672"
+
+func failOnError(err error, msg string) {
+    if err != nil {
+        panic(fmt.Sprintf("%s: %s", msg, err))
+    }
+}
+
+func receiveMessage(){
+    conn, err := amqp.Dial(amqpURI)
+    failOnError(err, "RabbitMQ接続失敗")
+    defer conn.Close()
+
+    channel, err := conn.Channel()
+    failOnError(err, "チャンネルオープン失敗")
+
+    q, err := channel.QueueDeclare(
+        "order-complete", // name
+        false,      // durable
+        false,      // delete when unused
+        false,      // exclusive
+        false,      // no-wait
+        nil,        // arguments
+    )
+    failOnError(err, "キュー宣言失敗")
+
+    messages, err := channel.Consume(
+        q.Name,     // queue
+        "",         // consumer
+        true,       // auto-ack
+        false,      // exclusive
+        false,      // no-local
+        false,      // no-wait
+        nil,        // arguments
+    )
+    failOnError(err, "受信設定失敗")
+
+    forever := make(chan bool)
+    // 並行処理でメッセージ受信
+    go func() {
+        for data := range messages {
+            fmt.Printf("%s\n", data.Body)
+            user := new(User)
+            if err := json.Unmarshal(data.Body, user); err != nil {
+                failOnError(err, "JSONパースエラー")
+            }
+            // ユーザのカート削除処理
+            cartContent := []Cart{}
+            db.Where(map[string]interface{}{"user_id": user.UserId}).Find(&cartContent)
+            db.Delete(&cartContent)
+            fmt.Println("カート削除処理完了:")
+        }
+    }()
+    fmt.Printf("メッセージ受信開始 To exit press CTRL+C\n")
+    <-forever
+}

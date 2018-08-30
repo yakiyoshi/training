@@ -106,6 +106,7 @@ func LoginHandler(c *gin.Context) {
     // リクエストパラメータ取得
     email := c.PostForm("email") 
     password := c.PostForm("password")
+    
     // ログイン認証
     user := User{}
     if db.Where(&User{Email: email, Password: password}).First(&user).Error == nil{

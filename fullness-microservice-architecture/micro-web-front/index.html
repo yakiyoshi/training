@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>マイクロEC</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="index.html">マイクロEC</a>
+            </div>
+        </div>
+    </nav>
+        
+    <div class="container" style="margin-top:60px;">
+        <div class="row">
+            <div class="col-md-12">
+                <login></login><br>
+                <products></products>
+                <cart></cart>
+                <orders></orders>
+            </div>
+        </div>
+    </div>
+    <!-- ログインUIコンポーネント -->
+    <script type="riot/tag" src="js/components/login.tag"></script>
+    <script type="riot/tag" src="js/components/products.tag"></script>
+    <script type="riot/tag" src="js/components/cart.tag"></script>
+    <script type="riot/tag" src="js/components/orders.tag"></script>
+    <!-- Riot.js -->
+    <script src="https://cdn.jsdelivr.net/npm/riot@3.8/riot+compiler.min.js"></script>
+    <!-- Riot.js タグマウント -->
+    <script>
+        var observer = riot.observable()
+        riot.mount('*')
+    </script>
+</body>
+</html>
