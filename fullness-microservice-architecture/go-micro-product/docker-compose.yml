@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  product-app:
+    container_name: "product-app"
+    image: 'golang:1.9-stretch'
+    volumes:
+      - '.:/go'
+    ports:
+      - '3001:3001'
+      - '9001:9001'
+    command: 'go run main.go'
+    links:
+      - product-mysql
+    networks:
+      - local
+  product-mysql:
+    container_name: "product-db"
+    image: mysql
+    ports:
+      - "3308:3306"
+    environment:
+      # MYSQL_DATABASE: sample 初期ファイルで実行するのでdockerでは作成しない
+      MYSQL_CHARSET: utf8
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_ROOT_PASSWORD: mysql
+      TZ: "Asia/Tokyo"
+    volumes:
+      - "./mysql/init:/docker-entrypoint-initdb.d"
+      #- mysql:/var/lib/mysql
+    networks:
+      - local
+
+volumes:
+  mysql:
+    driver: 'local'
+
+networks:
+  local:
+    external: true

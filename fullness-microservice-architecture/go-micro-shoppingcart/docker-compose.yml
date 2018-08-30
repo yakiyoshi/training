@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  cart-app:
+    container_name: "cart-app"
+    image: 'golang:1.9-stretch'
+    volumes:
+      - '.:/go'
+    ports:
+      - '3002:3002'
+      - '9002:9002'
+    command: 'go run main.go'
+    links:
+      - cart-mysql
+    external_links:
+      - user-app
+      - rabbitmq
+    networks:
+      - local
+  cart-mysql:
+    container_name: "cart-db"
+    image: mysql
+    ports:
+      - "3309:3306"
+    environment:
+      # MYSQL_DATABASE: sample 初期ファイルで実行するのでdockerでは作成しない
+      MYSQL_CHARSET: utf8
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+      MYSQL_ROOT_PASSWORD: mysql
+      TZ: "Asia/Tokyo"
+    volumes:
+      - "./mysql/init:/docker-entrypoint-initdb.d"
+      - mysql:/var/lib/mysql
+    networks:
+      - local
+
+volumes:
+  app:
+    driver: 'local'
+  mysql:
+    driver: 'local'
+
+networks:
+  local:
+    external: true
